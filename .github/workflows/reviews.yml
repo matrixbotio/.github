@@ -1,0 +1,34 @@
+name: Review assigning
+
+on:
+  pull_request:
+    branches:
+     - master
+  pull_request_review:
+    branches:
+     - master
+
+jobs:
+  reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token to access wiki repo
+        id: tokenizer
+        uses: tibdex/github-app-token@v1.5.1
+        with:
+          app_id: ${{ secrets.GH_CI_APP_ID }}
+          private_key: ${{ secrets.GH_CI_PRIVATE_KEY }}
+
+      - name: Download review scheme
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: '1'
+          path: wiki
+          repository: ${{ github.repository_owner }}/wiki
+          token: ${{ steps.tokenizer.outputs.token }}
+
+      - name: Set reviewers or merge
+        uses: KaMeHb-UA/auto-review-action@v7
+        with:
+          scheme-file: "${{ github.workspace }}/wiki/review-scheme.yml"
+          token: ${{ github.token }}
